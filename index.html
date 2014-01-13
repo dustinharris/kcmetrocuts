@@ -41,6 +41,11 @@
 			margin-right: 8px;
 			opacity: 0.7;
 		}
+
+        #neighborhood-wrapper {
+            height: 200px;
+            width: 200px;
+        }
     </style>
 </head>
 
@@ -50,6 +55,7 @@
 
     <script>
         var neighborhoodArray = new Array();
+        var selectedNeighborhoodsArray = new Array();
 
         var osm = L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: 'Map data &copy; 2013 OpenStreetMap contributors',
@@ -66,12 +72,13 @@
         info.onAdd = function (map) {
             this._div = L.DomUtil.create('div', 'info');
             this.update();
+            this._div.innerHTML = '<h4>Seattle Neighborhoods</h4><b><div id="neighborhood-name"></div></b><br />Neighborhoods:<br /><div id="neighborhood-wrapper"></div>';
             return this._div;
         };
 
         info.update = function (props) {
             if (typeof props != "undefined") {
-                this._div.innerHTML = '<h4>Seattle Neighborhoods</h4><b>' + props.NEIGHBORHO + '</b><br />Neighborhoods:<br /><div id="neighborhood-wrapper"></div>';
+                $("#neighborhood-name").html(props.NEIGHBORHO);
             }
         };
 
@@ -81,9 +88,9 @@
             return {
                 weight: 2,
                 opacity: 1.0,
-                color: 'white',
+                color: '#666',
                 fillOpacity: 0.2,
-                fillColor: '#0893cf'
+                fillColor: '#fff',
             };
         }
 
@@ -112,25 +119,42 @@
             info.update();
         }
 
+        function updateSelectedNeighborhoodList() {
+            $("#neighborhood-wrapper").html("");
+            selectedNeighborhoodsArray.forEach(function (neighborhoodName) {
+                $("#neighborhood-wrapper").append(neighborhoodName + "<br />");
+            });
+        }
+
         function zoomToFeature(e) {
             //map.fitBounds(e.target.getBounds());
 
             var layer = e.target;
 
-            layer.setStyle({
-                fillOpacity: 0.7,
-                fillColor: '#4218f8'
-            });
+            var neighborhoodName = layer.feature.properties.NEIGHBORHO;
 
-            neighborhoodArray.push(layer.feature.properties.NEIGHBORHO);
-            ("neighborhood-wrapper").innerHTML += neighborhoodArray[0] + "<br />";
-            alert("hi" + neighborhoodArray[0]);
+            // if indexInNeighborhoodArray returns as -1, the neighborhood is not in the selected elements array
+            var indexInNeighborhoodArray = $.inArray(neighborhoodName, selectedNeighborhoodsArray);
+            if (indexInNeighborhoodArray == -1) {
+                selectedNeighborhoodsArray.push(neighborhoodName);
+                layer.setStyle({
+                    fillOpacity: 0.7,
+                    fillColor: '#4218f8'
+                });
+            } else {
+                selectedNeighborhoodsArray.splice(indexInNeighborhoodArray, 1);
+                layer.setStyle({
+                    fillOpacity: 0.7,
+                    fillColor: '#f00'
+                });
+            }
+            updateSelectedNeighborhoodList();
         }
 
 
         function onEachFeature(feature, layer) {
             layer.on({
-                mouseover: highlightFeature,
+                //mouseover: highlightFeature,
                 //mouseout: resetHighlight,
                 click: zoomToFeature,
             });
