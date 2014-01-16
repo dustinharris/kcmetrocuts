@@ -11,18 +11,22 @@
     <script src="togeojson.js"></script>
     <script src="jquery.js"></script>
     <style>
+        body {
+            color: #333;
+        }
         #map {
 			width: auto;
 			height: 600px;
 		}
 
 		.info {
-			padding: 6px 8px;
+			padding: 8px 100px 20px 8px;
 			font: 14px/16px Arial, Helvetica, sans-serif;
 			background: white;
 			background: rgba(255,255,255,0.8);
 			box-shadow: 0 0 15px rgba(0,0,0,0.2);
 			border-radius: 5px;
+            width:300px;
 		}
 		.info h4 {
 			margin: 0 0 5px;
@@ -31,7 +35,6 @@
 
 		.legend {
 			text-align: left;
-			line-height: 18px;
 			color: #555;
 		}
 		.legend i {
@@ -46,6 +49,34 @@
             height: 200px;
             width: 200px;
         }
+        .info h2 {
+            line-height: 22px;
+        }
+        .info h1 {
+            line-height: 30px;
+        }
+
+        .questions {
+            color:#999;
+        }
+
+        .questions:hover {
+            cursor: pointer;
+        }
+
+        .neighborhood-name {
+            padding:2px;
+            background-color:#66ccff;
+            border-bottom: 1px solid #c4dae9;
+            border-right: 1px solid #c4dae9;
+            float:left;
+            margin-right:3px;
+            margin-bottom:2px;
+        }
+
+        .clear {
+            clear: both;
+        }
     </style>
 </head>
 
@@ -56,6 +87,7 @@
     <script>
         var neighborhoodArray = new Array();
         var selectedNeighborhoodsArray = new Array();
+        var selectedQuestion = 1;
 
         var osm = L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: 'Map data &copy; 2013 OpenStreetMap contributors',
@@ -72,7 +104,10 @@
         info.onAdd = function (map) {
             this._div = L.DomUtil.create('div', 'info');
             this.update();
-            this._div.innerHTML = '<h4>Seattle Neighborhoods</h4><b><div id="neighborhood-name"></div></b><br />Neighborhoods:<br /><div id="neighborhood-wrapper"></div>';
+            this._div.innerHTML = '<h1>How will the <br />budget cuts <br />affect you?</h1>' + 
+                    '<div id="question-1" class="questions"><h2>1. What neighborhood do you live in?</h2><div class="neighborhoods-container"></div></div><div class="clear"></div>' +
+                    '<div id="question-2" class="questions"><h2>2. What neighborhood(s) do you work in?</h2><div class="neighborhoods-container"></div></div><div class="clear"></div>' +
+                    '<div id="question-3" class="questions"><h2>3. What other neighborhood(s) do you visit often?</h2><div class="neighborhoods-container"></div></div><div class="clear"></div>';
             return this._div;
         };
 
@@ -120,9 +155,9 @@
         }
 
         function updateSelectedNeighborhoodList() {
-            $("#neighborhood-wrapper").html("");
-            selectedNeighborhoodsArray.forEach(function (neighborhoodName) {
-                $("#neighborhood-wrapper").append(neighborhoodName + "<br />");
+            $("#question-" + selectedQuestion).find('.neighborhoods-container').html("");
+            selectedNeighborhoodsArray[selectedQuestion].forEach(function (neighborhoodName) {
+                $('#question-' + selectedQuestion).find(".neighborhoods-container").append('<div class="neighborhood-name">' + neighborhoodName + "</div>");
             });
         }
 
@@ -134,15 +169,15 @@
             var neighborhoodName = layer.feature.properties.NEIGHBORHO;
 
             // if indexInNeighborhoodArray returns as -1, the neighborhood is not in the selected elements array
-            var indexInNeighborhoodArray = $.inArray(neighborhoodName, selectedNeighborhoodsArray);
+            var indexInNeighborhoodArray = $.inArray(neighborhoodName, selectedNeighborhoodsArray[selectedQuestion]);
             if (indexInNeighborhoodArray == -1) {
-                selectedNeighborhoodsArray.push(neighborhoodName);
+                selectedNeighborhoodsArray[selectedQuestion].push(neighborhoodName);
                 layer.setStyle({
                     fillOpacity: 0.7,
                     fillColor: '#4218f8'
                 });
             } else {
-                selectedNeighborhoodsArray.splice(indexInNeighborhoodArray, 1);
+                selectedNeighborhoodsArray[question].splice(indexInNeighborhoodArray, 1);
                 layer.setStyle({
                     fillOpacity: 0.7,
                     fillColor: '#f00'
@@ -150,7 +185,6 @@
             }
             updateSelectedNeighborhoodList();
         }
-
 
         function onEachFeature(feature, layer) {
             layer.on({
@@ -163,6 +197,21 @@
         }
 
         $.ajax('neighborhoods.kml').done(function (xml) {
+            $('#question-1').css('color', '#333');
+            $('.questions').click(function () {
+                $('.questions').css('color', '#999');
+                $(this).css('color', '#333');
+                //alert("name: " + $(this).attr("id"));
+                questionNumber = parseInt($(this).attr("id").split("-")[1]);
+                selectedQuestion = questionNumber;
+                console.log("question number: " + selectedQuestion);
+            });
+
+            selectedNeighborhoodsArray[0] = new Array();
+            selectedNeighborhoodsArray[1] = new Array();
+            selectedNeighborhoodsArray[2] = new Array();
+            selectedNeighborhoodsArray[3] = new Array();
+
             var neighborhoodjs = toGeoJSON.kml(xml);
 
             geojson = L.geoJson(neighborhoodjs, {
