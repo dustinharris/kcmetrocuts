@@ -64,6 +64,9 @@
             cursor: pointer;
         }
 
+        .neighborhood-selected {
+        }
+
         .neighborhood-name {
             padding:2px;
             background-color:#66ccff;
@@ -131,17 +134,18 @@
 
         function highlightFeature(e) {
             var layer = e.target;
+            var neighborhoodName = layer.feature.properties.NEIGHBORHO;
 
-            layer.setStyle({
-                weight: 2,
-                color: '#666666',
-                dashArray: '',
-                fillOpacity: 0.5,
-                fillColor: '#FFFFFF'
-            });
 
-            if (!L.Browser.ie && !L.Browser.opera) {
-                layer.bringToFront();
+            if ($.inArray(neighborhoodName, selectedNeighborhoodsArray[selectedQuestion])) {
+                console.log('neighborhood name: ' + neighborhoodName + ' in array: ' + selectedNeighborhoodsArray[selectedQuestion]);
+            } else {
+                layer.setStyle({
+                    weight: 2,
+                    color: '#666666',
+                    fillOpacity: 0.8,
+                    fillColor: '#AAA'
+                });
             }
 
             info.update(layer.feature.properties);
@@ -150,7 +154,15 @@
         var geojson;
 
         function resetHighlight(e) {
-            geojson.resetStyle(e.target);
+            var layer = e.target;
+            var neighborhoodName = layer.feature.properties.NEIGHBORHO;
+
+            if ($.inArray(neighborhoodName, selectedNeighborhoodsArray[selectedQuestion])) {
+                console.log('question: ' + selectedQuestion);
+                console.log(selectedNeighborhoodsArray);
+            } else {
+                geojson.resetStyle(e.target);
+            }
             info.update();
         }
 
@@ -165,7 +177,6 @@
             //map.fitBounds(e.target.getBounds());
 
             var layer = e.target;
-
             var neighborhoodName = layer.feature.properties.NEIGHBORHO;
 
             // if indexInNeighborhoodArray returns as -1, the neighborhood is not in the selected elements array
@@ -177,7 +188,7 @@
                     fillColor: '#4218f8'
                 });
             } else {
-                selectedNeighborhoodsArray[question].splice(indexInNeighborhoodArray, 1);
+                selectedNeighborhoodsArray[selectedQuestion].splice(indexInNeighborhoodArray, 1);
                 layer.setStyle({
                     fillOpacity: 0.7,
                     fillColor: '#f00'
@@ -188,8 +199,8 @@
 
         function onEachFeature(feature, layer) {
             layer.on({
-                //mouseover: highlightFeature,
-                //mouseout: resetHighlight,
+                mouseover: highlightFeature,
+                mouseout: resetHighlight,
                 click: zoomToFeature,
             });
 
