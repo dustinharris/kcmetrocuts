@@ -14,10 +14,15 @@
         body {
             color: #333;
         }
+
         #map {
 			width: auto;
 			height: 600px;
 		}
+
+        .clear {
+            clear:both;
+        }
 
 		.info {
 			padding: 8px 100px 20px 8px;
@@ -27,11 +32,24 @@
 			box-shadow: 0 0 15px rgba(0,0,0,0.2);
 			border-radius: 5px;
             width:300px;
+            float: right;
 		}
 		.info h4 {
 			margin: 0 0 5px;
 			color: #777;
 		}
+
+        .selected-neighborhood-display {
+            padding: 8px 100px 20px 8px;
+            font: 14px/16px Arial, Helvetica, sans-serif;
+            background: white;
+            background: rgba(255,255,255,0.8);
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            border-radius: 5px;
+            width:100px;
+            position:relative;
+            margin-left:-100px;
+        }
 
 		.legend {
 			text-align: left;
@@ -103,6 +121,8 @@
 
         // control that shows state info on hover
         var info = L.control();
+        var selectedNeighborhoodDisplay = L.control();
+        var clearMap = L.control();
 
         info.onAdd = function (map) {
             this._div = L.DomUtil.create('div', 'info');
@@ -114,6 +134,27 @@
             return this._div;
         };
 
+        selectedNeighborhoodDisplay.onAdd = function (map) {
+            console.log("added neighborhood display");
+            this._div = L.DomUtil.create('div', 'selected-neighborhood-display');
+            this.update();
+            return this._div;
+        };
+
+        clearMap.onAdd = function(map) {
+            this._div = L.DomUtil.create('div', 'clear');
+            this.update();
+            return this._div;
+        }
+
+        clearMap.update = function(props) {
+            console.log("map cleared");
+        };
+
+        selectedNeighborhoodDisplay.update = function(props) {
+            console.log("added neighborhood");
+        };
+
         info.update = function (props) {
             if (typeof props != "undefined") {
                 $("#neighborhood-name").html(props.NEIGHBORHO);
@@ -121,6 +162,12 @@
         };
 
         info.addTo(map);
+
+        selectedNeighborhoodDisplay.addTo(map);
+
+        clearMap.addTo(map);
+
+        console.log('...');
 
         function style(feature) {
             return {
@@ -136,8 +183,8 @@
             var layer = e.target;
             var neighborhoodName = layer.feature.properties.NEIGHBORHO;
 
-
-            if ($.inArray(neighborhoodName, selectedNeighborhoodsArray[selectedQuestion])) {
+            if ($.inArray(neighborhoodName, selectedNeighborhoodsArray[selectedQuestion]) != -1) {
+                $.inArray(neighborhoodName, selectedNeighborhoodsArray[selectedQuestion]);
                 console.log('neighborhood name: ' + neighborhoodName + ' in array: ' + selectedNeighborhoodsArray[selectedQuestion]);
             } else {
                 layer.setStyle({
@@ -156,11 +203,14 @@
         function resetHighlight(e) {
             var layer = e.target;
             var neighborhoodName = layer.feature.properties.NEIGHBORHO;
+            console.log(neighborhoodName);
+            console.log("selected question: " + selectedQuestion);
 
-            if ($.inArray(neighborhoodName, selectedNeighborhoodsArray[selectedQuestion])) {
+            if ($.inArray(neighborhoodName, selectedNeighborhoodsArray[selectedQuestion]) != -1) {
                 console.log('question: ' + selectedQuestion);
-                console.log(selectedNeighborhoodsArray);
+                console.log(selectedNeighborhoodsArray[selectedQuestion]);
             } else {
+                console.log("neighborhood out is in array: " + $.inArray(neighborhoodName, selectedNeighborhoodsArray[selectedQuestion]));
                 geojson.resetStyle(e.target);
             }
             info.update();
@@ -181,6 +231,7 @@
 
             // if indexInNeighborhoodArray returns as -1, the neighborhood is not in the selected elements array
             var indexInNeighborhoodArray = $.inArray(neighborhoodName, selectedNeighborhoodsArray[selectedQuestion]);
+            console.log(indexInNeighborhoodArray);
             if (indexInNeighborhoodArray == -1) {
                 selectedNeighborhoodsArray[selectedQuestion].push(neighborhoodName);
                 layer.setStyle({
