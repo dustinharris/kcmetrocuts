@@ -20,10 +20,6 @@
 			height: 600px;
 		}
 
-        .clear {
-            clear:both;
-        }
-
 		.info {
 			padding: 8px 100px 20px 8px;
 			font: 14px/16px Arial, Helvetica, sans-serif;
@@ -41,14 +37,19 @@
 
         .selected-neighborhood-display {
             padding: 8px 100px 20px 8px;
-            font: 14px/16px Arial, Helvetica, sans-serif;
+            font: 26px Arial, Helvetica, sans-serif;
             background: white;
             background: rgba(255,255,255,0.8);
             box-shadow: 0 0 15px rgba(0,0,0,0.2);
             border-radius: 5px;
-            width:100px;
+            width:300px;
             position:relative;
             margin-left:-100px;
+        }
+
+        .selected-neighborhood-name h2 {
+            font-weight:bold;
+            line-height:10px;
         }
 
 		.legend {
@@ -98,6 +99,7 @@
         .clear {
             clear: both;
         }
+
     </style>
 </head>
 
@@ -121,8 +123,7 @@
 
         // control that shows state info on hover
         var info = L.control();
-        var selectedNeighborhoodDisplay = L.control();
-        var clearMap = L.control();
+        var selectedNeighborhoodDisplay = L.control({position: 'topleft'});
 
         info.onAdd = function (map) {
             this._div = L.DomUtil.create('div', 'info');
@@ -138,21 +139,14 @@
             console.log("added neighborhood display");
             this._div = L.DomUtil.create('div', 'selected-neighborhood-display');
             this.update();
+            this._div.innerHTML = 'neighborhood:<br /><h2 class="selected-neighborhood-name"></h2>';
             return this._div;
-        };
-
-        clearMap.onAdd = function(map) {
-            this._div = L.DomUtil.create('div', 'clear');
-            this.update();
-            return this._div;
-        }
-
-        clearMap.update = function(props) {
-            console.log("map cleared");
         };
 
         selectedNeighborhoodDisplay.update = function(props) {
-            console.log("added neighborhood");
+            if (typeof props != "undefined") {
+                $(".selected-neighborhood-name").html(props.NEIGHBORHO);
+            }
         };
 
         info.update = function (props) {
@@ -164,8 +158,6 @@
         info.addTo(map);
 
         selectedNeighborhoodDisplay.addTo(map);
-
-        clearMap.addTo(map);
 
         console.log('...');
 
@@ -196,6 +188,7 @@
             }
 
             info.update(layer.feature.properties);
+            selectedNeighborhoodDisplay.update(layer.feature.properties);
         }
 
         var geojson;
