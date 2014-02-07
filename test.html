@@ -1,0 +1,40 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+    <title>Bus Route Lookup</title>
+
+	    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7/leaflet.css" />
+	    <link rel="stylesheet" href="font-awesome.min.css" />
+
+	    <script src="http://cdn.leafletjs.com/leaflet-0.7/leaflet.js"></script>
+	    <script src="leaflet.filelayer.js"></script>
+	    <script src="togeojson.js"></script>
+	    <script src="jquery.js"></script>
+
+    </head>
+
+	<body>
+		<h2>Bus number:</h2>
+		<input type="text" name="user" id="single-bus-route-number">
+		<input type="submit" value="Submit" id="single-bus-route-submit">
+
+		<script type="text/javascript">
+	        $(window).load(function(){
+	        	console.log("page loaded");
+	        	$('#single-bus-route-submit').click(function () {
+	        		console.log($('#single-bus-route-number').val());
+	        	});
+
+	        	$(document).keypress(function(e) {
+				    if(e.which == 13) {
+				    	console.log($('#single-bus-route-number').val());
+				    }
+				});
+
+				$.get('http://localhost:8080/kcmetrocuts/routes.txt', function(data) {
+				    console.log('made it');
+				});
+	        });
+	    </script>
+	</body>
+</html>
