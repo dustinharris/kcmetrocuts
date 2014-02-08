@@ -10,6 +10,7 @@
 	    <script src="leaflet.filelayer.js"></script>
 	    <script src="togeojson.js"></script>
 	    <script src="jquery.js"></script>
+	    <script src="js/jquery-csv.js"></script>
 
     </head>
 
@@ -21,18 +22,41 @@
 		<script type="text/javascript">
 	        $(window).load(function(){
 	        	console.log("page loaded");
+	        	var fileData;
+
 	        	$('#single-bus-route-submit').click(function () {
 	        		console.log($('#single-bus-route-number').val());
 	        	});
 
 	        	$(document).keypress(function(e) {
 				    if(e.which == 13) {
-				    	console.log($('#single-bus-route-number').val());
+				    	var enteredRoute = $('#single-bus-route-number').val();
+				    	var foundRoute = false;
+				    	$.each(fileData , function( key, value ) {
+						  if (value[2] == enteredRoute) {
+						  	console.log( key + ": " + value );
+						  	foundRoute = true;
+						  }
+						});
+						if (foundRoute == false) {
+							console.log("route not found");
+						}
+
+						$.ajax({
+					        type: 'POST',
+					        url: "index.php",           
+					        success: function(data)
+					        {
+					        	alert("Do whatever you want if the call completed successfully");
+					        }
+					    });
 				    }
 				});
 
-				$.get('http://localhost:8080/kcmetrocuts/routes.txt', function(data) {
-				    console.log('made it');
+				$.get('routes.txt', function(data) {
+				    var csv = data; // this is the string containing the CSV data
+					fileData = $.csv.toArrays(csv);
+					console.log(fileData);
 				});
 	        });
 	    </script>
